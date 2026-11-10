@@ -1,5 +1,7 @@
 #include <iostream>
+#include <iomanip>
 #include "graph.h"
+#include "algo.h"
 using namespace std;
 
 int main() {
@@ -11,11 +13,22 @@ int main() {
     }
 
     g.displayGraph();
+    cout << endl;
 
-    // fee test: weight badalna chahiye
-    cout << "weight (no fee): " << g.edgesOf(0)[0].weight << endl;
+    cout << "Fee 0%: ";
+    printResult(g, bellmanFord(g));
+
+    g.setFee(0.002);
+    cout << "Fee 0.2%: ";
+    printResult(g, bellmanFord(g));
+
     g.setFee(0.01);
-    cout << "weight (1% fee): " << g.edgesOf(0)[0].weight << endl;
+    cout << "Fee 1%: ";
+    printResult(g, bellmanFord(g));
+
+    g.setFee(0.0);
+    double be = breakEvenFee(g);
+    cout << endl << "Break-even fee: " << fixed << setprecision(4) << be * 100 << "% per trade" << endl;
 
     return 0;
 }

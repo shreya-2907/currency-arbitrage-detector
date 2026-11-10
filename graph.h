@@ -33,6 +33,7 @@ public:
     void displayGraph() const;
 
     void setFee(double f);                        // saare weights dobara compute
+    double getFee() const;
     void setEdgeActive(int u, int edgeIdx, bool a);
 
     int size() const;

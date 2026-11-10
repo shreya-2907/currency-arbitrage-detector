@@ -98,3 +98,29 @@ void printResult(const Graph& g, const Result& r) {
     cout << " | Edge checks: " << r.ops
          << " | Time: " << fixed << setprecision(4) << r.timeMs << " ms" << endl;
 }
+
+// Wo sabse bada fee jahan tak arbitrage bacha rehta hai (binary search).
+// Fee badhne par har weight badhta hai, isliye "arbitrage hai" -> "nahi hai"
+// ek hi baar badalta hai (monotonic), aur binary search sahi chalta hai.
+// Return: break-even fee (0.004 = 0.4%), ya -1 agar fee 0 par bhi arbitrage nahi.
+double breakEvenFee(Graph& g) {
+    double oldFee = g.getFee();
+
+    g.setFee(0.0);
+    if (!bellmanFord(g).found) {
+        g.setFee(oldFee);
+        return -1.0;
+    }
+
+    double lo = 0.0;      // yahan arbitrage hai
+    double hi = 0.5;      // yahan nahi hoga (50% fee)
+    for (int i = 0; i < 50; i++) {
+        double mid = (lo + hi) / 2.0;
+        g.setFee(mid);
+        if (bellmanFord(g).found) lo = mid;
+        else hi = mid;
+    }
+
+    g.setFee(oldFee);     // fee wapas pehle jaisi
+    return lo;
+}

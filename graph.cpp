@@ -90,7 +90,9 @@ void Graph::setFee(double f) {
         }
     }
 }
-
+double Graph::getFee() const {
+    return fee;
+}
 void Graph::setEdgeActive(int u, int edgeIdx, bool a) {
     if (u < 0 || u >= (int)adjacencyList.size()) return;
     if (edgeIdx < 0 || edgeIdx >= (int)adjacencyList[u].size()) return;

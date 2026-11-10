@@ -17,5 +17,6 @@ struct Result {
 Result bellmanFord(const Graph& g);
 double cycleProfit(const Graph& g, const vector<int>& cycle);
 void printResult(const Graph& g, const Result& r);
+double breakEvenFee(Graph& g);
 
 #endif
