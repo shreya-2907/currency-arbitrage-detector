@@ -1,8 +1,67 @@
 #include <iostream>
 #include <iomanip>
+#include <limits>
+#include <sstream>
 #include "graph.h"
 #include "algo.h"
 using namespace std;
+
+// Algorithm number (1/2/3) se sahi function chalao
+Result runAlgorithm(int choice, const Graph& g) {
+    if (choice == 1) return bellmanFord(g);
+    if (choice == 2) return spfa(g);
+    return floydWarshall(g);
+}
+
+string algorithmName(int choice) {
+    if (choice == 1) return "Bellman-Ford";
+    if (choice == 2) return "SPFA";
+    return "Floyd-Warshall";
+}
+
+// Teeno algorithms ek hi graph pe chalake table dikhao
+void compareAll(const Graph& g) {
+    cout << endl;
+    cout << left << setw(16) << "Algorithm" << setw(8) << "Found"
+         << setw(10) << "Profit" << setw(14) << "Edge checks"
+         << setw(12) << "Time (ms)" << "Cycle" << endl;
+
+    for (int a = 1; a <= 3; a++) {
+        Result r = runAlgorithm(a, g);
+        cout << left << setw(16) << algorithmName(a)
+             << setw(8) << (r.found ? "Yes" : "No");
+
+        if (r.found) {
+            ostringstream p;                               // "1.27%" jaisa text banane ke liye
+            p << fixed << setprecision(2) << r.profit * 100 << "%";
+            cout << setw(10) << p.str();
+        } else {
+            cout << setw(10) << "-";
+        }
+
+        cout << setw(14) << r.ops << setw(12) << fixed << setprecision(4) << r.timeMs;
+
+        if (r.found) {
+            for (size_t i = 0; i < r.cycle.size(); i++) cout << g.nameOf(r.cycle[i]) << ">";
+            cout << g.nameOf(r.cycle[0]);
+        }
+        cout << endl;
+    }
+    cout << "Note: edge checks ka matlab har algorithm me alag hai (Floyd-Warshall me triple-loop steps)." << endl;
+}
+
+void printMenu(const Graph& g) {
+    cout << endl;
+    cout << "===== Currency Arbitrage Detector =====" << endl;
+    cout << "Current fee: " << fixed << setprecision(3) << g.getFee() * 100 << "% per trade" << endl;
+    cout << "1. Show exchange rates" << endl;
+    cout << "2. Set fee per trade" << endl;
+    cout << "3. Detect arbitrage (choose algorithm)" << endl;
+    cout << "4. Compare all algorithms" << endl;
+    cout << "5. Break-even fee" << endl;
+    cout << "0. Exit" << endl;
+    cout << "Enter choice: ";
+}
 
 int main() {
     Graph g;
@@ -12,23 +71,59 @@ int main() {
         return 1;
     }
 
-    g.displayGraph();
-    cout << endl;
+    int choice = -1;
+    while (choice != 0) {
+        printMenu(g);
 
-    cout << "Fee 0%: ";
-    printResult(g, bellmanFord(g));
+        if (!(cin >> choice)) {                      // number ki jagah kuch aur likha
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            choice = -1;
+            cout << "Please enter a number." << endl;
+            continue;
+        }
 
-    g.setFee(0.002);
-    cout << "Fee 0.2%: ";
-    printResult(g, bellmanFord(g));
+        if (choice == 1) {
+            g.displayGraph();
+        }
+        else if (choice == 2) {
+            double percent;
+            cout << "Enter fee in percent (example 0.2 for 0.2%): ";
+            if (cin >> percent && percent >= 0 && percent < 100) {
+                g.setFee(percent / 100.0);
+                cout << "Fee set to " << percent << "%" << endl;
+            } else {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Invalid fee." << endl;
+            }
+        }
+        else if (choice == 3) {
+            int a;
+            cout << "1. Bellman-Ford  2. SPFA  3. Floyd-Warshall" << endl;
+            cout << "Choose algorithm: ";
+            if (cin >> a && a >= 1 && a <= 3) {
+                cout << algorithmName(a) << ": ";
+                printResult(g, runAlgorithm(a, g));
+            } else {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Invalid algorithm number." << endl;
+            }
+        }
+        else if (choice == 4) {
+            compareAll(g);
+        }
+        else if (choice == 5) {
+            double be = breakEvenFee(g);
+            if (be < 0) cout << "No arbitrage even with 0% fee." << endl;
+            else cout << "Break-even fee: " << fixed << setprecision(4) << be * 100 << "% per trade" << endl;
+        }
+        else if (choice != 0) {
+            cout << "Invalid choice." << endl;
+        }
+    }
 
-    g.setFee(0.01);
-    cout << "Fee 1%: ";
-    printResult(g, bellmanFord(g));
-
-    g.setFee(0.0);
-    double be = breakEvenFee(g);
-    cout << endl << "Break-even fee: " << fixed << setprecision(4) << be * 100 << "% per trade" << endl;
-
+    cout << "Bye." << endl;
     return 0;
 }
