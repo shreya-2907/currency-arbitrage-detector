@@ -3,7 +3,7 @@
 #include <chrono>
 #include <algorithm>
 #include <iomanip>
-#include "myqueue.h"
+#include "Myqueue.h"
 
 double cycleProfit(const Graph& g, const vector<int>& cycle) {
     double sum = 0.0;

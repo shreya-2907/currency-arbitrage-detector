@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <unordered_map>   // baad me apne HashMap se replace hoga
+#include "hashmap.h"       // apna HashMap (chaining)
 using namespace std;
 
 struct Edge {
@@ -17,8 +17,8 @@ struct Edge {
 class Graph {
 private:
     vector<string> currencies;
-    vector<vector<Edge>> adjacencyList;
-    unordered_map<string, int> currencyIndex;
+    vector<vector<Edge> > adjacencyList;
+    StringIntMap currencyIndex;                   // currency naam -> index (apna HashMap)
     double fee;                                   // per-trade fee, 0.0 = no fee
 
     int findCurrency(const string& name) const;   // -1 agar na mile
@@ -29,6 +29,9 @@ public:
 
     int addCurrency(const string& name);
     void addExchangeRate(const string& from, const string& to, double rate);
+    void addExchangeRateIdx(int u, int v, double rate);      // index se seedha (generator ke liye tez)
+    bool updateRate(int u, int v, double rate);              // rate badlo, edge na ho to jodo
+    bool updateRateByName(const string& from, const string& to, double rate);
     bool loadRatesFromFile(const string& filename);
     void displayGraph() const;
 

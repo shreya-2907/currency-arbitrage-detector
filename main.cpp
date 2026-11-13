@@ -4,6 +4,8 @@
 #include <sstream>
 #include "graph.h"
 #include "algo.h"
+#include "features.h"
+#include "benchmark.h"
 using namespace std;
 
 // Algorithm number (1/2/3) se sahi function chalao
@@ -50,6 +52,43 @@ void compareAll(const Graph& g) {
     cout << "Note: edge checks ka matlab har algorithm me alag hai (Floyd-Warshall me triple-loop steps)." << endl;
 }
 
+// k = 2..maxK ke liye best arbitrage ek table me dikhao (kitne trades allowed, kitna profit)
+void hopTable(const Graph& g, int maxK) {
+    cout << endl;
+    cout << left << setw(14) << "Max trades" << setw(10) << "Profit" << "Cycle" << endl;
+    for (int k = 2; k <= maxK; k++) {
+        Result r = hopLimited(g, k);
+        cout << left << setw(14) << k;
+        if (!r.found) {
+            cout << "none" << endl;
+            continue;
+        }
+        ostringstream p;
+        p << fixed << setprecision(2) << r.profit * 100 << "%";
+        cout << setw(10) << p.str();
+        for (size_t i = 0; i < r.cycle.size(); i++) cout << g.nameOf(r.cycle[i]) << ">";
+        cout << g.nameOf(r.cycle[0]) << endl;
+    }
+}
+
+void printTopK(Graph& g, int k, int algo) {
+    vector<Result> list = topKCycles(g, k, algo == 1 ? bellmanFord : (algo == 2 ? spfa : floydWarshall));
+    if (list.empty()) {
+        cout << "No arbitrage found." << endl;
+        return;
+    }
+    cout << endl;
+    cout << left << setw(6) << "Rank" << setw(10) << "Profit" << "Cycle" << endl;
+    for (size_t i = 0; i < list.size(); i++) {
+        ostringstream p;
+        p << fixed << setprecision(2) << list[i].profit * 100 << "%";
+        cout << left << setw(6) << i + 1 << setw(10) << p.str();
+        for (size_t j = 0; j < list[i].cycle.size(); j++) cout << g.nameOf(list[i].cycle[j]) << ">";
+        cout << g.nameOf(list[i].cycle[0]) << endl;
+    }
+    cout << "Note: top-k ek heuristic hai, saare cycles milne ki guarantee nahi." << endl;
+}
+
 void printMenu(const Graph& g) {
     cout << endl;
     cout << "===== Currency Arbitrage Detector =====" << endl;
@@ -59,6 +98,11 @@ void printMenu(const Graph& g) {
     cout << "3. Detect arbitrage (choose algorithm)" << endl;
     cout << "4. Compare all algorithms" << endl;
     cout << "5. Break-even fee" << endl;
+    cout << "6. Hop-limited arbitrage (max trades)" << endl;
+    cout << "7. Top-k profitable cycles" << endl;
+    cout << "8. Update one exchange rate" << endl;
+    cout << "9. Benchmark (planted arbitrage, saves CSV)" << endl;
+    cout << "10. Self-test against brute force" << endl;
     cout << "0. Exit" << endl;
     cout << "Enter choice: ";
 }
@@ -118,6 +162,63 @@ int main() {
             double be = breakEvenFee(g);
             if (be < 0) cout << "No arbitrage even with 0% fee." << endl;
             else cout << "Break-even fee: " << fixed << setprecision(4) << be * 100 << "% per trade" << endl;
+        }
+        else if (choice == 6) {
+            int k;
+            cout << "Maximum number of trades to show (2 to 6): ";
+            if (cin >> k && k >= 2 && k <= 6) {
+                // DFS exponential hai, isliye bade graph pe k ko chhota rakhte hain
+                int allowed = 6;
+                if (g.size() > 60) allowed = 3;
+                else if (g.size() > 25) allowed = 4;
+                if (k > allowed) {
+                    cout << "Graph bada hai, isliye max trades " << allowed << " tak limit kiya." << endl;
+                    k = allowed;
+                }
+                hopTable(g, k);
+            } else {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Please enter a number from 2 to 6." << endl;
+            }
+        }
+        else if (choice == 7) {
+            int k, a;
+            cout << "How many cycles (1 to 10): ";
+            if (!(cin >> k) || k < 1 || k > 10) {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Please enter a number from 1 to 10." << endl;
+                continue;
+            }
+            cout << "1. Bellman-Ford  2. SPFA  3. Floyd-Warshall" << endl;
+            cout << "Choose algorithm: ";
+            if (cin >> a && a >= 1 && a <= 3) {
+                printTopK(g, k, a);
+            } else {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Invalid algorithm number." << endl;
+            }
+        }
+        else if (choice == 8) {
+            string from, to;
+            double rate;
+            cout << "Enter: from to new_rate (example: USD EUR 0.95): ";
+            if (cin >> from >> to >> rate && g.updateRateByName(from, to, rate)) {
+                cout << "Updated. Re-checking with Bellman-Ford: ";
+                printResult(g, bellmanFord(g));
+            } else {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Could not update. Check currency names and use a rate greater than 0." << endl;
+            }
+        }
+        else if (choice == 9) {
+            runBenchmark();
+        }
+        else if (choice == 10) {
+            runSelfTest();
         }
         else if (choice != 0) {
             cout << "Invalid choice." << endl;

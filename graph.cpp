@@ -9,9 +9,7 @@ Graph::Graph() {
 // ---------- private helpers ----------
 
 int Graph::findCurrency(const string& name) const {
-    unordered_map<string, int>::const_iterator it = currencyIndex.find(name);
-    if (it == currencyIndex.end()) return -1;
-    return it->second;
+    return currencyIndex.get(name);     // apna HashMap: nahi mila to -1
 }
 
 double Graph::computeWeight(double rate) const {
@@ -27,13 +25,19 @@ int Graph::addCurrency(const string& name) {
     idx = currencies.size();
     currencies.push_back(name);
     adjacencyList.push_back(vector<Edge>());
-    currencyIndex[name] = idx;
+    currencyIndex.put(name, idx);
     return idx;
 }
 
 void Graph::addExchangeRate(const string& from, const string& to, double rate) {
     int u = addCurrency(from);          // naya ho to bana dega, warna purana index
     int v = addCurrency(to);
+    addExchangeRateIdx(u, v, rate);
+}
+
+void Graph::addExchangeRateIdx(int u, int v, double rate) {
+    if (u < 0 || v < 0 || u >= (int)adjacencyList.size() || v >= (int)adjacencyList.size()) return;
+    if (rate <= 0) return;              // log(<=0) valid nahi hota
 
     Edge e;
     e.to = v;
@@ -42,6 +46,29 @@ void Graph::addExchangeRate(const string& from, const string& to, double rate) {
     e.active = true;
 
     adjacencyList[u].push_back(e);
+}
+
+// u -> v ka rate badlo (weight bhi dobara nikalo). Edge pehle se na ho to naya jodo.
+bool Graph::updateRate(int u, int v, double rate) {
+    if (u < 0 || v < 0 || u >= (int)adjacencyList.size() || v >= (int)adjacencyList.size()) return false;
+    if (rate <= 0) return false;
+
+    for (size_t i = 0; i < adjacencyList[u].size(); i++) {
+        if (adjacencyList[u][i].to == v) {
+            adjacencyList[u][i].rate = rate;
+            adjacencyList[u][i].weight = computeWeight(rate);
+            return true;
+        }
+    }
+    addExchangeRateIdx(u, v, rate);
+    return true;
+}
+
+bool Graph::updateRateByName(const string& from, const string& to, double rate) {
+    int u = findCurrency(from);
+    int v = findCurrency(to);
+    if (u == -1 || v == -1 || u == v) return false;
+    return updateRate(u, v, rate);
 }
 
 bool Graph::loadRatesFromFile(const string& filename) {
@@ -90,9 +117,11 @@ void Graph::setFee(double f) {
         }
     }
 }
+
 double Graph::getFee() const {
     return fee;
 }
+
 void Graph::setEdgeActive(int u, int edgeIdx, bool a) {
     if (u < 0 || u >= (int)adjacencyList.size()) return;
     if (edgeIdx < 0 || edgeIdx >= (int)adjacencyList[u].size()) return;
