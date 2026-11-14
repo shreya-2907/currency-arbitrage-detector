@@ -6,21 +6,21 @@ Graph::Graph() {
     fee = 0.0;
 }
 
-// ---------- private helpers ----------
+
 
 int Graph::findCurrency(const string& name) const {
-    return currencyIndex.get(name);     // apna HashMap: nahi mila to -1
+    return currencyIndex.get(name);    
 }
 
 double Graph::computeWeight(double rate) const {
-    return -log(rate * (1.0 - fee));
+    return -log(rate * (1.0 - fee)); //weight
 }
 
-// ---------- building the graph ----------
+//building graph
 
 int Graph::addCurrency(const string& name) {
     int idx = findCurrency(name);
-    if (idx != -1) return idx;          // pehle se hai
+    if (idx != -1) return idx;         
 
     idx = currencies.size();
     currencies.push_back(name);
@@ -30,14 +30,14 @@ int Graph::addCurrency(const string& name) {
 }
 
 void Graph::addExchangeRate(const string& from, const string& to, double rate) {
-    int u = addCurrency(from);          // naya ho to bana dega, warna purana index
+    int u = addCurrency(from);        
     int v = addCurrency(to);
     addExchangeRateIdx(u, v, rate);
 }
 
 void Graph::addExchangeRateIdx(int u, int v, double rate) {
     if (u < 0 || v < 0 || u >= (int)adjacencyList.size() || v >= (int)adjacencyList.size()) return;
-    if (rate <= 0) return;              // log(<=0) valid nahi hota
+    if (rate <= 0) return;            
 
     Edge e;
     e.to = v;
@@ -48,7 +48,7 @@ void Graph::addExchangeRateIdx(int u, int v, double rate) {
     adjacencyList[u].push_back(e);
 }
 
-// u -> v ka rate badlo (weight bhi dobara nikalo). Edge pehle se na ho to naya jodo.
+
 bool Graph::updateRate(int u, int v, double rate) {
     if (u < 0 || v < 0 || u >= (int)adjacencyList.size() || v >= (int)adjacencyList.size()) return false;
     if (rate <= 0) return false;
@@ -77,8 +77,8 @@ bool Graph::loadRatesFromFile(const string& filename) {
 
     string from, to;
     double rate;
-    while (file >> from >> to >> rate) {    // har line: USD EUR 0.92
-        if (rate > 0) {                     // log(<=0) valid nahi hota
+    while (file >> from >> to >> rate) {    
+        if (rate > 0) {                     
             addExchangeRate(from, to, rate);
         }
     }
@@ -87,7 +87,7 @@ bool Graph::loadRatesFromFile(const string& filename) {
     return true;
 }
 
-// ---------- display ----------
+//display
 
 void Graph::displayGraph() const {
     int totalEdges = 0;
@@ -105,10 +105,10 @@ void Graph::displayGraph() const {
     cout << "Edges: " << totalEdges << endl;
 }
 
-// ---------- fee / edge control ----------
+//fee / edge control
 
 void Graph::setFee(double f) {
-    if (f < 0.0 || f >= 1.0) return;        // galat fee ignore
+    if (f < 0.0 || f >= 1.0) return;       
 
     fee = f;
     for (int u = 0; u < (int)adjacencyList.size(); u++) {
@@ -128,7 +128,7 @@ void Graph::setEdgeActive(int u, int edgeIdx, bool a) {
     adjacencyList[u][edgeIdx].active = a;
 }
 
-// ---------- getters (algorithms inhi se graph padhenge) ----------
+//getters
 
 int Graph::size() const {
     return currencies.size();

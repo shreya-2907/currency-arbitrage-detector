@@ -4,9 +4,7 @@
 #include <string>
 using namespace std;
 
-// Apna HashMap: string (currency ka naam) -> int (graph ka index).
-// Collision handle karne ke liye CHAINING: har bucket me ek linked list.
-// Load factor 0.75 se upar jaye to buckets double karke sab dobara hash karte hain (rehash).
+// Custom hash map: string (currency name) -> int (index in the graph)
 class StringIntMap {
 private:
     struct Node {
@@ -15,11 +13,11 @@ private:
         Node* next;
     };
 
-    Node** buckets;      // buckets[i] = i-th linked list ka pehla node
+    Node** buckets;      // buckets[i] = i-th linked list's 1st node
     int bucketCount;
     int itemCount;
 
-    // djb2 hash: string ke har character se number banata hai
+    // djb2 hash: turns string to no.
     static unsigned long hashOf(const string& s) {
         unsigned long h = 5381;
         for (size_t i = 0; i < s.size(); i++) {
@@ -52,19 +50,19 @@ private:
         int oldCount = bucketCount;
         Node** old = buckets;
 
-        init(oldCount * 2);                       // naya bada array
+        init(oldCount * 2);                      
         for (int i = 0; i < oldCount; i++) {
             Node* cur = old[i];
             while (cur != NULL) {
                 Node* nxt = cur->next;
-                int pos = hashOf(cur->key) % bucketCount;   // naye size ke hisaab se nayi jagah
+                int pos = hashOf(cur->key) % bucketCount;   
                 cur->next = buckets[pos];
                 buckets[pos] = cur;
                 itemCount++;
                 cur = nxt;
             }
         }
-        delete[] old;                             // sirf purana array, nodes naye me chale gaye
+        delete[] old;                            
     }
 
 public:
@@ -97,7 +95,7 @@ public:
         return itemCount;
     }
 
-    // key mile to uski value, warna -1
+
     int get(const string& key) const {
         int pos = hashOf(key) % bucketCount;
         for (Node* cur = buckets[pos]; cur != NULL; cur = cur->next) {
@@ -106,7 +104,7 @@ public:
         return -1;
     }
 
-    // key pehle se ho to value badlo, warna naya node jodo
+
     void put(const string& key, int value) {
         int pos = hashOf(key) % bucketCount;
         for (Node* cur = buckets[pos]; cur != NULL; cur = cur->next) {
@@ -116,7 +114,7 @@ public:
             }
         }
 
-        if ((itemCount + 1) * 4 > bucketCount * 3) {   // load factor 0.75 paar
+        if ((itemCount + 1) * 4 > bucketCount * 3) {  
             rehash();
             pos = hashOf(key) % bucketCount;
         }
@@ -124,7 +122,7 @@ public:
         Node* n = new Node;
         n->key = key;
         n->value = value;
-        n->next = buckets[pos];                   // list ke aage jodo
+        n->next = buckets[pos];                 
         buckets[pos] = n;
         itemCount++;
     }

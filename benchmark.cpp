@@ -10,7 +10,7 @@
 #include <set>
 using namespace std;
 
-// Teeno algorithms ko ek graph pe 'reps' baar chalao, average time aur aakhri run ka result do
+
 static void measure(const Graph& g, int reps, Result out[3], double avgMs[3]) {
     for (int a = 0; a < 3; a++) {
         double total = 0.0;
@@ -58,7 +58,7 @@ void runBenchmark() {
                 double ms[3];
                 measure(g, reps, res, ms);
 
-                // sahi jawab: planted ho to teeno ko "found" kehna chahiye, warna "not found"
+        
                 bool ok = true;
                 for (int a = 0; a < 3; a++) {
                     if (res[a].found != (planted == 1)) ok = false;
@@ -85,10 +85,10 @@ void runBenchmark() {
     cout << string(94, '-') << endl;
     cout << (everythingOk ? "All algorithms gave the correct answer on every graph."
                           : "WARNING: some algorithm gave a wrong answer (see OK column).") << endl;
-    cout << "Results saved to benchmark_results.csv (Excel me khol ke graph bana sakte ho)." << endl;
+    cout << "Results saved to benchmark_results.csv " << endl;
 }
 
-// Cycle valid hai? (koi node repeat nahi, har edge maujood, aur sach me profit hai)
+
 static bool isValidCycle(const Graph& g, const vector<int>& c) {
     set<int> s(c.begin(), c.end());
     if (c.size() < 2 || s.size() != c.size()) return false;
@@ -105,7 +105,7 @@ void runSelfTest() {
     int withArbitrage = 0;
 
     for (int t = 0; t < TESTS; t++) {
-        int n = 3 + (int)(unit(rng) * 5);               // 3 se 7 currencies
+        int n = 3 + (int)(unit(rng) * 5);              
         if (n > 7) n = 7;
         Graph g;
         vector<double> price(n);
@@ -117,7 +117,7 @@ void runSelfTest() {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (i != j && unit(rng) < density) {
-                    double noise = 0.985 + 0.03 * unit(rng);    // rates me thoda shor
+                    double noise = 0.985 + 0.03 * unit(rng);   
                     g.addExchangeRateIdx(i, j, price[i] / price[j] * noise);
                 }
             }

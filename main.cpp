@@ -8,7 +8,7 @@
 #include "benchmark.h"
 using namespace std;
 
-// Algorithm number (1/2/3) se sahi function chalao
+
 Result runAlgorithm(int choice, const Graph& g) {
     if (choice == 1) return bellmanFord(g);
     if (choice == 2) return spfa(g);
@@ -21,7 +21,6 @@ string algorithmName(int choice) {
     return "Floyd-Warshall";
 }
 
-// Teeno algorithms ek hi graph pe chalake table dikhao
 void compareAll(const Graph& g) {
     cout << endl;
     cout << left << setw(16) << "Algorithm" << setw(8) << "Found"
@@ -34,7 +33,7 @@ void compareAll(const Graph& g) {
              << setw(8) << (r.found ? "Yes" : "No");
 
         if (r.found) {
-            ostringstream p;                               // "1.27%" jaisa text banane ke liye
+            ostringstream p;                               
             p << fixed << setprecision(2) << r.profit * 100 << "%";
             cout << setw(10) << p.str();
         } else {
@@ -49,10 +48,10 @@ void compareAll(const Graph& g) {
         }
         cout << endl;
     }
-    cout << "Note: edge checks ka matlab har algorithm me alag hai (Floyd-Warshall me triple-loop steps)." << endl;
+
 }
 
-// k = 2..maxK ke liye best arbitrage ek table me dikhao (kitne trades allowed, kitna profit)
+
 void hopTable(const Graph& g, int maxK) {
     cout << endl;
     cout << left << setw(14) << "Max trades" << setw(10) << "Profit" << "Cycle" << endl;
@@ -86,7 +85,7 @@ void printTopK(Graph& g, int k, int algo) {
         for (size_t j = 0; j < list[i].cycle.size(); j++) cout << g.nameOf(list[i].cycle[j]) << ">";
         cout << g.nameOf(list[i].cycle[0]) << endl;
     }
-    cout << "Note: top-k ek heuristic hai, saare cycles milne ki guarantee nahi." << endl;
+    cout << "Note: top-k is a heuristic; finding every cycle is not guaranteed." << endl;
 }
 
 void printMenu(const Graph& g) {
@@ -119,7 +118,7 @@ int main() {
     while (choice != 0) {
         printMenu(g);
 
-        if (!(cin >> choice)) {                      // number ki jagah kuch aur likha
+        if (!(cin >> choice)) {                      
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             choice = -1;
@@ -167,12 +166,12 @@ int main() {
             int k;
             cout << "Maximum number of trades to show (2 to 6): ";
             if (cin >> k && k >= 2 && k <= 6) {
-                // DFS exponential hai, isliye bade graph pe k ko chhota rakhte hain
+            
                 int allowed = 6;
                 if (g.size() > 60) allowed = 3;
                 else if (g.size() > 25) allowed = 4;
                 if (k > allowed) {
-                    cout << "Graph bada hai, isliye max trades " << allowed << " tak limit kiya." << endl;
+                    cout << "Large graph: maximum trades limited to " << allowed << "."<< endl;
                     k = allowed;
                 }
                 hopTable(g, k);

@@ -4,13 +4,13 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "hashmap.h"       // apna HashMap (chaining)
+#include "hashmap.h"       // custom hash map (chaining)
 using namespace std;
 
 struct Edge {
     int to;         // destination node index
     double rate;    // original exchange rate
-    double weight;  // -ln(rate * (1 - fee)), algorithms yahi use karte hain
+    double weight;  // -ln(rate * (1 - fee))
     bool active;    // top-k cycles ke liye: false = edge temporarily band
 };
 
@@ -18,10 +18,10 @@ class Graph {
 private:
     vector<string> currencies;
     vector<vector<Edge> > adjacencyList;
-    StringIntMap currencyIndex;                   // currency naam -> index (apna HashMap)
+    StringIntMap currencyIndex;                   // currency naam -> index 
     double fee;                                   // per-trade fee, 0.0 = no fee
 
-    int findCurrency(const string& name) const;   // -1 agar na mile
+    int findCurrency(const string& name) const;  
     double computeWeight(double rate) const;
 
 public:
@@ -29,20 +29,20 @@ public:
 
     int addCurrency(const string& name);
     void addExchangeRate(const string& from, const string& to, double rate);
-    void addExchangeRateIdx(int u, int v, double rate);      // index se seedha (generator ke liye tez)
-    bool updateRate(int u, int v, double rate);              // rate badlo, edge na ho to jodo
+    void addExchangeRateIdx(int u, int v, double rate);      
+    bool updateRate(int u, int v, double rate);              
     bool updateRateByName(const string& from, const string& to, double rate);
     bool loadRatesFromFile(const string& filename);
     void displayGraph() const;
 
-    void setFee(double f);                        // saare weights dobara compute
+    void setFee(double f);                       
     double getFee() const;
     void setEdgeActive(int u, int edgeIdx, bool a);
 
     int size() const;
     string nameOf(int i) const;
     const vector<Edge>& edgesOf(int u) const;
-    double rateBetween(int u, int v) const;       // 0 agar edge nahi hai
+    double rateBetween(int u, int v) const;     
 };
 
 #endif

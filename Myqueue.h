@@ -1,9 +1,7 @@
 #ifndef MYQUEUE_H
 #define MYQUEUE_H
 
-// Apni circular queue (int ki), fixed size array ke saath.
-// SPFA me ek node ek waqt me sirf ek baar queue me hota hai (inQueue flag),
-// isliye capacity = n + 1 kaafi hai.
+// Custom circular queue of ints, fixed-size array.
 class IntQueue {
 private:
     int* data;
@@ -29,13 +27,13 @@ public:
 
     void push(int x) {
         if (count == capacity) return;            // full: ignore
-        data[(head + count) % capacity] = x;      // peeche se daalo
+        data[(head + count) % capacity] = x;      // peeche se add
         count++;
     }
 
     int pop() {
         int x = data[head];
-        head = (head + 1) % capacity;             // aage se nikalo
+        head = (head + 1) % capacity;             // remove from the front
         count--;
         return x;
     }

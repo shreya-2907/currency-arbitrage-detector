@@ -83,9 +83,7 @@ Result bellmanFord(const Graph& g) {
     return res;
 }
 
-// Parent array se cycle nikalne ka helper (SPFA ke liye).
-// start se n step peeche jao (cycle ke andar pahunchne ke liye), phir ghoom ke cycle collect karo.
-// Cycle na mile to khaali vector.
+
 static vector<int> cycleFromParent(const vector<int>& parent, int start, int n) {
     vector<int> cyc;
     int x = start;
@@ -103,9 +101,7 @@ static vector<int> cycleFromParent(const vector<int>& parent, int start, int n) 
     return cyc;
 }
 
-// SPFA = Bellman-Ford ka queue wala version.
-// Sirf wahi nodes dobara dekhte hain jinka dist abhi badla ho.
-// len[v] = v tak pahunchne wale path me kitne edges hain; len >= n matlab negative cycle.
+
 Result spfa(const Graph& g) {
     Result res;
     res.found = false;
@@ -124,8 +120,7 @@ Result spfa(const Graph& g) {
     vector<bool> inQueue(n, true);
 
     IntQueue q(n + 1);
-    for (int i = 0; i < n; i++) q.push(i);      // shuru me sab queue me (virtual source)
-
+    for (int i = 0; i < n; i++) q.push(i);      
     while (!q.empty() && !res.found) {
         int u = q.pop();
         inQueue[u] = false;
@@ -141,7 +136,7 @@ Result spfa(const Graph& g) {
                 parent[v] = u;
                 len[v] = len[u] + 1;
 
-                if (len[v] >= n) {              // n edges ka path = cycle pakka
+                if (len[v] >= n) {              
                     vector<int> cyc = cycleFromParent(parent, v, n);
                     if (!cyc.empty()) {
                         res.cycle = cyc;
@@ -164,9 +159,8 @@ Result spfa(const Graph& g) {
     return res;
 }
 
-// Floyd-Warshall: har pair (i, j) ka shortest path, O(V^3).
-// Agar kisi node ka dist[i][i] < 0 ho jaye to wo negative cycle pe hai.
-// pred[i][j] = i se j ke best path me j se pehle wala node.
+// Floyd-Warshall
+
 Result floydWarshall(const Graph& g) {
     Result res;
     res.found = false;
@@ -180,7 +174,7 @@ Result floydWarshall(const Graph& g) {
     const double EPS = 1e-12;
     const double INF = 1e18;
 
-    vector<double> dist((size_t)n * n, INF);     // n x n matrix ek vector me
+    vector<double> dist((size_t)n * n, INF);     
     vector<int> pred((size_t)n * n, -1);
 
     for (int i = 0; i < n; i++) dist[(size_t)i * n + i] = 0.0;
@@ -198,7 +192,7 @@ Result floydWarshall(const Graph& g) {
         }
     }
 
-    int bad = -1;                                // jis node pe dist[i][i] < 0 hua
+    int bad = -1;                                
     for (int k = 0; k < n && bad == -1; k++) {
         for (int i = 0; i < n && bad == -1; i++) {
             if (dist[(size_t)i * n + k] >= INF) continue;
@@ -209,14 +203,14 @@ Result floydWarshall(const Graph& g) {
                 if (nd < dist[(size_t)i * n + j] - EPS) {
                     dist[(size_t)i * n + j] = nd;
                     pred[(size_t)i * n + j] = pred[(size_t)k * n + j];
-                    if (i == j) { bad = i; break; }   // negative cycle mil gaya
+                    if (i == j) { bad = i; break; }   // negative cycle found
                 }
             }
         }
     }
 
     if (bad != -1) {
-        // bad se bad tak ka path pred se peeche chalke nikalo
+        
         vector<int> walk;
         int cur = bad;
         for (int steps = 0; steps <= n + 1; steps++) {
@@ -225,7 +219,7 @@ Result floydWarshall(const Graph& g) {
             if (cur == -1 || cur == bad) break;
         }
 
-        // walk me koi node repeat ho to sirf wo simple cycle rakho
+        
         vector<int> cyc;
         for (size_t i = 0; i < walk.size() && cyc.empty(); i++) {
             for (size_t j = i + 1; j < walk.size(); j++) {
@@ -236,7 +230,7 @@ Result floydWarshall(const Graph& g) {
             }
         }
         if (cyc.empty()) cyc = walk;
-        reverse(cyc.begin(), cyc.end());         // pred peeche ki taraf jaata hai
+        reverse(cyc.begin(), cyc.end());         
 
         double p = cycleProfit(g, cyc);
         if (p > 0) {
@@ -244,8 +238,7 @@ Result floydWarshall(const Graph& g) {
             res.cycle = cyc;
             res.profit = p;
         } else {
-            // Floyd-Warshall ne cycle ki maujoodgi pakki bata di, par path galat nikla.
-            // Sirf path banane ke liye Bellman-Ford ka sahaara (rare case).
+            
             Result bf = bellmanFord(g);
             res.found = bf.found;
             res.cycle = bf.cycle;
@@ -273,10 +266,7 @@ void printResult(const Graph& g, const Result& r) {
          << " | Time: " << fixed << setprecision(4) << r.timeMs << " ms" << endl;
 }
 
-// Wo sabse bada fee jahan tak arbitrage bacha rehta hai (binary search).
-// Fee badhne par har weight badhta hai, isliye "arbitrage hai" -> "nahi hai"
-// ek hi baar badalta hai (monotonic), aur binary search sahi chalta hai.
-// Return: break-even fee (0.004 = 0.4%), ya -1 agar fee 0 par bhi arbitrage nahi.
+
 double breakEvenFee(Graph& g) {
     double oldFee = g.getFee();
 
@@ -286,8 +276,8 @@ double breakEvenFee(Graph& g) {
         return -1.0;
     }
 
-    double lo = 0.0;      // yahan arbitrage hai
-    double hi = 0.5;      // yahan nahi hoga (50% fee)
+    double lo = 0.0;      // arbitrage exists at this fee
+    double hi = 0.5;      // no arbitrage at this fee (50%)
     for (int i = 0; i < 50; i++) {
         double mid = (lo + hi) / 2.0;
         g.setFee(mid);
@@ -295,6 +285,6 @@ double breakEvenFee(Graph& g) {
         else hi = mid;
     }
 
-    g.setFee(oldFee);     // fee wapas pehle jaisi
+    g.setFee(oldFee);     
     return lo;
 }

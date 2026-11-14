@@ -5,18 +5,9 @@
 #include <set>
 #include <utility>
 
-// ---------------------------------------------------------------
+
 // 1) Hop-limited arbitrage
-//
-// Sawal: "sabse zyada k trades me best arbitrage kaunsa hai?"
-// Tarika: har start node se depth-limited DFS. Raaste me koi node dobara nahi aata
-// (simple cycle), aur sirf wahi nodes jinka index start se bada ho (taaki ek cycle
-// ki rotations dobara na ginen). Weight ka sum sabse chhota (negative) = sabse zyada profit.
-//
-// Note: pehle Bellman-Ford jaisa dp[t][v] try kiya tha, par wo "do cycles ka mix"
-// (node repeat hone wala walk) de deta hai, simple cycle nahi. Isliye ye DFS exact hai.
-// Complexity: O(V * d^k) (d = ek node se nikalne wale edges), isliye k chhota rakho.
-// ---------------------------------------------------------------
+
 
 struct HopSearch {
     const Graph* g;
@@ -31,7 +22,7 @@ struct HopSearch {
 
 static void hopDfs(HopSearch& hs, int u, double sum) {
     const vector<Edge>& edges = hs.g->edgesOf(u);
-    int edgesUsed = (int)hs.path.size() - 1;          // abhi tak kitne trades hue
+    int edgesUsed = (int)hs.path.size() - 1;          
 
     for (size_t i = 0; i < edges.size(); i++) {
         if (!edges[i].active) continue;
@@ -40,7 +31,7 @@ static void hopDfs(HopSearch& hs, int u, double sum) {
         double nsum = sum + edges[i].weight;
 
         if (v == hs.start) {
-            if (edgesUsed + 1 >= 2 && nsum < hs.bestSum - 1e-12) {   // cycle band hua
+            if (edgesUsed + 1 >= 2 && nsum < hs.bestSum - 1e-12) {  
                 hs.bestSum = nsum;
                 hs.bestCycle = hs.path;
             }
@@ -67,7 +58,7 @@ Result hopLimited(const Graph& g, int k) {
     HopSearch hs;
     hs.g = &g;
     hs.k = k;
-    hs.bestSum = -1e-12;                              // sirf negative cycle chahiye
+    hs.bestSum = -1e-12;                             
     hs.ops = 0;
     hs.onPath.assign(n, false);
 
@@ -92,25 +83,16 @@ Result hopLimited(const Graph& g, int k) {
     return res;
 }
 
-// ---------------------------------------------------------------
+
 // 2) Top-k cycles
-//
-// Idea: ek cycle mila to uske ek edge ko band (active = false) karke dobara
-// detection chalao. Cycle ke har edge ke liye aisa karo, naye cycles ko list me
-// jodo aur unpe bhi yahi dohrao. Last me profit ke hisaab se sort.
-// Kyun kaam karta hai: koi bhi doosra cycle C' purane cycle C ke saare edges nahi
-// rakh sakta (warna wo C hi hota), yaani C' C ka kam se kam ek edge nahi rakhta, aur
-// wo "us edge ko band karne wale" state me zinda rehta hai. Isliye time kaafi ho
-// to saare cycles milte hain. Par time/runs limited hain (MAX_RUNS), isliye
-// ye BEST-EFFORT (heuristic) hai: top-1 hamesha sabse achha ho, ye guarantee nahi.
-// ---------------------------------------------------------------
+
 
 struct DisabledEdge {
     int u;
-    int idx;      // adjacencyList[u] me edge ka number
+    int idx;      // position of the edge inside adjacencyList[u]
 };
 
-// Cycle ko ek standard roop do (sabse chhota node pehle), taaki rotations ek hi ginein
+
 static vector<int> canonical(const vector<int>& cyc) {
     size_t minPos = 0;
     for (size_t i = 1; i < cyc.size(); i++) {
@@ -121,7 +103,7 @@ static vector<int> canonical(const vector<int>& cyc) {
     return out;
 }
 
-// u -> v ka wo active edge dhoondo jise algorithm use karega (sabse kam weight)
+
 static int findEdgeIndex(const Graph& g, int u, int v) {
     const vector<Edge>& edges = g.edgesOf(u);
     int best = -1;
@@ -139,15 +121,15 @@ static bool profitHigher(const Result& a, const Result& b) {
 
 vector<Result> topKCycles(Graph& g, int k, Result (*algo)(const Graph&)) {
     vector<Result> found;
-    vector<vector<int> > seen;                       // mil chuke cycles (canonical roop me)
-    vector<vector<DisabledEdge> > pending;           // jin edge-sets ko try karna baaki hai
-    set<vector<pair<int, int> > > visited;           // jo band-edge sets pehle try ho chuke
+    vector<vector<int> > seen;                       
+    vector<vector<DisabledEdge> > pending;           
+    set<vector<pair<int, int> > > visited;           
 
-    pending.push_back(vector<DisabledEdge>());       // pehle kuch band nahi
+    pending.push_back(vector<DisabledEdge>());       
     visited.insert(vector<pair<int, int> >());
     size_t next = 0;
     int runs = 0;
-    const int MAX_RUNS = 2000;                        // infinite/bahut lamba chalne se bachao
+    const int MAX_RUNS = 2000;                       
 
     while (next < pending.size() && runs < MAX_RUNS) {
         vector<DisabledEdge> state = pending[next];
@@ -171,12 +153,12 @@ vector<Result> topKCycles(Graph& g, int k, Result (*algo)(const Graph&)) {
             found.push_back(r);
         }
 
-        // is cycle ke har edge ko (purani band list ke upar) band karke naya state banao
+       
         for (size_t i = 0; i < canon.size(); i++) {
             int u = canon[i];
             int v = canon[(i + 1) % canon.size()];
 
-            // edge ka number us waqt dekho jab state ke edges band hon
+           
             for (size_t j = 0; j < state.size(); j++) g.setEdgeActive(state[j].u, state[j].idx, false);
             int idx = findEdgeIndex(g, u, v);
             for (size_t j = 0; j < state.size(); j++) g.setEdgeActive(state[j].u, state[j].idx, true);
@@ -188,7 +170,7 @@ vector<Result> topKCycles(Graph& g, int k, Result (*algo)(const Graph&)) {
             vector<DisabledEdge> ns = state;
             ns.push_back(d);
 
-            // same edges ka set kisi aur order me pehle aa chuka ho to dobara mat jodo
+           
             vector<pair<int, int> > key;
             for (size_t j = 0; j < ns.size(); j++) key.push_back(make_pair(ns[j].u, ns[j].idx));
             sort(key.begin(), key.end());

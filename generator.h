@@ -3,13 +3,13 @@
 
 #include "graph.h"
 
-// Test market banata hai.
-//   n        : kitni currencies
-//   density  : har (i -> j) jodi ke liye edge hone ki probability (1.0 = dense, 0.1 = sparse)
-//   spread   : har trade pe chhota nuksaan (0.005 = 0.5%), isliye base market me arbitrage NAHI banta
-//   plantLen : 0 = koi arbitrage nahi; 3 = 3 currencies ka profitable cycle chhupao
-//   bonus    : planted cycle ke har edge pe extra faayda (0.02 = 2%)
-//   seed     : same seed = same market (results repeat ho sakte hain)
+/// Builds a test market.
+//   n -number of currencies
+//   density-probability that an edge (i -> j) exists (1.0 = dense, 0.1 = sparse)
+//   spread-small loss on every trade (0.005 = 0.5%), so the base market has NO arbitrage
+//   plantLen-0 = no arbitrage; 3 = hide a profitable cycle through 3 currencies
+//   bonus-extra gain on every edge of the planted cycle (0.02 = 2%)
+//   seed-the same seed always gives the same market (reproducible results)
 void buildMarket(Graph& g, int n, double density, double spread,
                  int plantLen, double bonus, unsigned seed);
 

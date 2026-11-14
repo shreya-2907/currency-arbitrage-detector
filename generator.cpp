@@ -3,10 +3,7 @@
 #include <string>
 #include <vector>
 
-// Idea: har currency ka ek "asli price" hota hai. i se j ka rate = price[i] / price[j].
-// Aise rates me kisi bhi cycle ka product exactly 1 hota hai (kuch fayda nahi).
-// Spread se har rate thoda ghatate hain, isliye har cycle ka product < 1 (arbitrage nahi).
-// Phir chahein to ek cycle ke rates jaanbujh kar badhake arbitrage "plant" karte hain.
+
 void buildMarket(Graph& g, int n, double density, double spread,
                  int plantLen, double bonus, unsigned seed) {
     mt19937 rng(seed);
@@ -15,7 +12,7 @@ void buildMarket(Graph& g, int n, double density, double spread,
     vector<double> price(n);
     for (int i = 0; i < n; i++) {
         g.addCurrency("C" + to_string(i));
-        price[i] = 1.0 + unit(rng) * 999.0;             // 1 se 1000 ke beech
+        price[i] = 1.0 + unit(rng) * 999.0;             // between 1 and 1000
     }
 
     for (int i = 0; i < n; i++) {
@@ -28,7 +25,7 @@ void buildMarket(Graph& g, int n, double density, double spread,
     }
 
     if (plantLen >= 2 && plantLen <= n) {
-        vector<int> nodes;                              // plantLen alag-alag random currencies
+        vector<int> nodes;                              
         while ((int)nodes.size() < plantLen) {
             int c = (int)(unit(rng) * n);
             if (c >= n) c = n - 1;
@@ -42,7 +39,7 @@ void buildMarket(Graph& g, int n, double density, double spread,
         for (int i = 0; i < plantLen; i++) {
             int u = nodes[i];
             int v = nodes[(i + 1) % plantLen];
-            // edge na ho (sparse graph) to ye jod bhi deta hai
+            // also adds the edge if it does not exist
             g.updateRate(u, v, price[u] / price[v] * (1.0 + bonus));
         }
     }
